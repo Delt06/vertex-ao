@@ -11,17 +11,14 @@ public class VertexAo : MonoBehaviour
 {
     [SerializeField] [Min(2)] private int _uSamples = 3;
     [SerializeField] [Min(2)] private int _vSamples = 5;
-    [SerializeField] [Min(0f)] private float _initialOffset = 0.1f;
+    [SerializeField] [Min(0f)] private float _initialOffset = 0.0001f;
     [SerializeField] [Min(0f)] private float _sampleRadius = 0.1f;
-    [SerializeField] private LayerMask _layerMask;
+    [SerializeField] private LayerMask _layerMask = int.MaxValue;
     [SerializeField] private ComputeShader _createRaycastCommandsCs;
     [SerializeField] private bool _updateEachFrame;
-    [SerializeField] [Range(0f, 180f)] private float _angle = 180f;
+    [SerializeField] [Range(0f, 180f)] private float _angle = 90f;
 
-    private void Start()
-    {
-        BakeAo();
-    }
+    private void Start() => BakeAo();
 
     private void Update()
     {
@@ -94,7 +91,7 @@ public class VertexAo : MonoBehaviour
             _createRaycastCommandsCs.SetInt("_LayerMask", _layerMask);
 
             _createRaycastCommandsCs.GetKernelThreadGroupSizes(0, out var kernelSizeX, out _, out _);
-            _createRaycastCommandsCs.Dispatch(0, vertices.Length / (int) kernelSizeX, 1, 1);
+            _createRaycastCommandsCs.Dispatch(0, Mathf.CeilToInt((float) vertices.Length / (int) kernelSizeX), 1, 1);
 
             var commandsArray = new RaycastCommand[commands.Length];
             commandsBuffer.GetData(commandsArray);
