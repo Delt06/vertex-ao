@@ -1,0 +1,81 @@
+#pragma kernel cs_main
+
+struct raycast_command
+{
+    float3 from;
+    float3 direction;
+    float distance;
+    int layer_mask;
+    int max_hits;
+};
+
+float4x4 _TransformMatrix;
+int _USamples;
+int _VSamples;
+int _VerticesCount;
+float2 _URange;
+
+Buffer<float4> _Vertices;
+Buffer<float4> _Normals;
+
+RWStructuredBuffer<raycast_command> _Commands;
+
+float _InitialOffset;
+float _SampleRadius;
+int _LayerMask;
+
+static float3 world_up = float3(0, 1, 0);
+
+// https://blog.thomaspoulet.fr/uniform-sampling-on-unit-hemisphere/
+float3 sample_hemisphere(float2 uv, float m = 1)
+{
+    const float theta = acos(pow(1 - uv.x, 1 / (1 + m)));
+    const float phi = 2 * 3.14 * uv.y;
+
+    float x = sin(theta) * cos(phi);
+    float y = sin(theta) * sin(phi);
+
+    return float3(x, y, cos(theta));
+}
+
+#include "Quaternion.hlsl"
+
+
+// 50 ms on serapis
+[numthreads(128,1,1)]
+void cs_main (uint3 id : SV_DispatchThreadID)
+{
+    const uint index = id.x;
+    if (index >= (uint) _VerticesCount) return;
+
+    const uint total_samples = _USamples * _VSamples;
+    const float u_step = 1. / (_USamples - 1);
+    const float v_step = 1. / (_VSamples - 1);
+    for (uint i = 0; i < total_samples; i++)
+    {
+        const uint iu = i % _VSamples;
+        const uint iv = i / _VSamples;
+        const float u = lerp(_URange.x, _URange.y, u_step * iu);
+        const float v = v_step * iv;
+        
+        const float3 normal = _Normals[index].xyz;
+        float3 direction = sample_hemisphere(float2(u, v));
+        const float3 world_normal = mul(_TransformMatrix, float4(normal, 0)).xyz;
+        const float4 rotation = q_look_at(world_normal, world_up);
+        direction = rotate_vector(direction, rotation);
+        
+        const uint command_index = index * total_samples + i;
+        const float3 from = mul(_TransformMatrix, float4(_Vertices[index].xyz, 1)).xyz +
+                   world_normal * _InitialOffset;
+        
+        raycast_command command;
+        command.direction = direction;
+        command.distance = _SampleRadius;
+        command.from = from;
+        command.layer_mask = _LayerMask;
+        command.max_hits = 1;
+        
+        _Commands[command_index] = command;
+    }
+    
+}
