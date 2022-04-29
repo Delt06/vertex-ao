@@ -61,7 +61,7 @@ void cs_main (uint3 id : SV_DispatchThreadID)
         const float3 normal = _Normals[index].xyz;
         float3 direction = sample_hemisphere(float2(u, v));
         const float3 world_normal = mul(_TransformMatrix, float4(normal, 0)).xyz;
-        const float4 rotation = q_look_at(world_normal, world_up);
+        const float4 rotation = q_look_at(world_normal, normalize(cross(direction, world_normal)));
         direction = rotate_vector(direction, rotation);
         
         const uint command_index = index * total_samples + i;

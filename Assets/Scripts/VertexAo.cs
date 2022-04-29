@@ -7,11 +7,12 @@ using UnityEngine.Profiling;
 using static AoUtils;
 using static Unity.Mathematics.math;
 
+[DefaultExecutionOrder(-1)]
 public class VertexAo : MonoBehaviour
 {
     [SerializeField] [Min(2)] private int _uSamples = 3;
     [SerializeField] [Min(2)] private int _vSamples = 5;
-    [SerializeField] [Min(0f)] private float _initialOffset = 0.0001f;
+    [SerializeField] private float _initialOffset = 0.0001f;
     [SerializeField] [Min(0f)] private float _sampleRadius = 0.1f;
     [SerializeField] private LayerMask _layerMask = int.MaxValue;
     [SerializeField] private ComputeShader _createRaycastCommandsCs;
@@ -123,7 +124,6 @@ public class VertexAo : MonoBehaviour
 
         mesh.SetColors(colors);
         colors.Dispose();
-        meshFilter.mesh = mesh;
         Profiler.EndSample();
     }
 }
