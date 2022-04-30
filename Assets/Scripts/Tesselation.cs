@@ -2,7 +2,7 @@
 using UnityEngine;
 using static UnityEngine.Vector3;
 
-[DefaultExecutionOrder(-2)]
+[DefaultExecutionOrder(-3)]
 public class Tesselation : MonoBehaviour
 {
     [SerializeField] [Min(1)] private int _iterations = 1;

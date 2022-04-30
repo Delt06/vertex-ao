@@ -7,7 +7,7 @@ using UnityEngine.Profiling;
 using static AoUtils;
 using static Unity.Mathematics.math;
 
-[DefaultExecutionOrder(-1)]
+[DefaultExecutionOrder(-2)]
 public class VertexAo : MonoBehaviour
 {
     [SerializeField] [Min(2)] private int _uSamples = 3;
