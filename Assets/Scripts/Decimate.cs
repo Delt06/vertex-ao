@@ -46,6 +46,8 @@ public class Decimate : MonoBehaviour
         _colors = new List<Color>();
         mesh.GetColors(_colors);
 
+        var vertexAttributes = new VertexAttributes(_vertices, _normals, _colors);
+
         for (var i = 0; i < triangles.Count; i += 3)
         {
             var i0 = triangles[i + 0];
@@ -81,7 +83,7 @@ public class Decimate : MonoBehaviour
 
         foreach (var cluster in _clusters)
         {
-            var shortestEdgeRemoval = new ShortestEdgeRemoval(cluster.Indices, _vertices, _normals, _colors);
+            var shortestEdgeRemoval = new ShortestEdgeRemoval(vertexAttributes, cluster.Indices);
             shortestEdgeRemoval.Run(_removalIterations, _minEdgeLength);
         }
 
