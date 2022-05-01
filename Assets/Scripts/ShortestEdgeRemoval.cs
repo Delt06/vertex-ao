@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 public class ShortestEdgeRemoval : MonoBehaviour
@@ -18,7 +17,6 @@ public class ShortestEdgeRemoval : MonoBehaviour
         var triangles = new List<int>();
         mesh.GetTriangles(triangles, 0);
 
-        var colors = Enumerable.Repeat(Color.white, vertices.Count).ToArray();
         Debug.Log("Original triangles: " + triangles.Count / 3);
 
         // http://paulbourke.net/geometry/polygonmesh/
@@ -74,13 +72,11 @@ public class ShortestEdgeRemoval : MonoBehaviour
 
             if (shortestEdge != null)
             {
-                // TODO: fix third iteration causes a hole
                 var edge = shortestEdge.Value;
                 var vertex0 = vertices[edge.I0];
                 var vertex1 = vertices[edge.I1];
-                var newVertex = Vector3.Lerp(vertex0, vertex1, 0f);
+                var newVertex = Vector3.Lerp(vertex0, vertex1, 0.5f);
                 vertices[edge.I0] = newVertex;
-                colors[edge.I0] = Color.red;
 
                 var tMaxIndex = Mathf.Max(t1Index, t2Index);
                 var tMinIndex = Mathf.Min(t1Index, t2Index);
@@ -102,7 +98,6 @@ public class ShortestEdgeRemoval : MonoBehaviour
 
 
         mesh.SetVertices(vertices);
-        mesh.SetColors(colors);
         Debug.Log("Resulting triangles: " + triangles.Count / 3);
         mesh.SetTriangles(triangles, 0);
     }
