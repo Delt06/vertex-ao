@@ -1,14 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using JetBrains.Annotations;
 using UnityEngine;
 
 [DefaultExecutionOrder(-1)]
 public class Decimate : MonoBehaviour
 {
     [SerializeField] private bool _updateEachFrame;
-    [SerializeField] [Range(-1, 1)] private float _minDot = 0.9f;
-    [SerializeField] [Min(0f)] private float _vertexCollapseDistance = 0.1f;
+    [SerializeField] [Min(0)] private int _removalIterations = 3;
+    [SerializeField] [Min(0f)] private float _minEdgeLength = 0.1f;
 
     private readonly List<Cluster> _clusters = new List<Cluster>();
     private readonly Dictionary<int, int> _vertexToClusterIndex = new Dictionary<int, int>();
@@ -44,21 +43,20 @@ public class Decimate : MonoBehaviour
             var i0 = triangles[i + 0];
             var i1 = triangles[i + 1];
             var i2 = triangles[i + 2];
-            var plane = ConstructPlane(i0, i1, i2);
 
-            if (TryGetMatchingCluster(i0, plane, out var cluster0))
+            if (TryGetMatchingCluster(i0, out var cluster0))
             {
                 AddTriangle(cluster0, i0, i1, i2);
                 continue;
             }
 
-            if (TryGetMatchingCluster(i1, plane, out var cluster1))
+            if (TryGetMatchingCluster(i1, out var cluster1))
             {
                 AddTriangle(cluster1, i0, i1, i2);
                 continue;
             }
 
-            if (TryGetMatchingCluster(i2, plane, out var cluster2))
+            if (TryGetMatchingCluster(i2, out var cluster2))
             {
                 AddTriangle(cluster2, i0, i1, i2);
                 continue;
@@ -67,43 +65,31 @@ public class Decimate : MonoBehaviour
             var newCluster = new Cluster
             {
                 Indices = new List<int>(),
-                Plane = plane,
                 Index = _clusters.Count,
             };
             AddTriangle(newCluster, i0, i1, i2);
             _clusters.Add(newCluster);
         }
 
+        foreach (var c1 in _clusters)
+        {
+            foreach (var c2 in _clusters)
+            {
+                if (c1.Index == c2.Index) continue;
+
+                if (c1.Indices.Intersect(c2.Indices).Any())
+                    Debug.Log(c1.Index + " intersects with " + c2.Index);
+            }
+        }
+
         var colors = new Color[_vertices.Count];
         var normals = new Vector3[_vertices.Count];
-        var oldState = Random.state;
-        Random.InitState(0);
 
         foreach (var cluster in _clusters)
         {
-            for (var vertexIndex = cluster.Indices.Count - 3; vertexIndex >= 0; vertexIndex -= 3)
-            {
-                var i0 = cluster.Indices[vertexIndex + 0];
-                var i1 = cluster.Indices[vertexIndex + 1];
-                var i2 = cluster.Indices[vertexIndex + 2];
-                var vertex0 = _vertices[i0];
-                var vertex1 = _vertices[i1];
-                var vertex2 = _vertices[i2];
-                if (Vector3.Distance(vertex0, vertex1) <= _vertexCollapseDistance) { }
-            }
+            var shortestEdgeRemoval = new ShortestEdgeRemoval(cluster.Indices, _vertices);
+            shortestEdgeRemoval.Run(_removalIterations, _minEdgeLength);
         }
-
-        foreach (var cluster in _clusters)
-        {
-            var color = Random.ColorHSV(0f, 1f, 0.75f, 1f, 0.75f, 1f);
-            foreach (var index in cluster.Indices)
-            {
-                colors[index] = color;
-                normals[index] = cluster.Plane.normal;
-            }
-        }
-
-        Random.state = oldState;
 
         mesh.SetTriangles(_clusters.SelectMany(c => c.Indices).ToArray(), 0);
         mesh.SetColors(colors);
@@ -120,38 +106,24 @@ public class Decimate : MonoBehaviour
         _vertexToClusterIndex[i2] = cluster.Index;
     }
 
-    private bool TryGetMatchingCluster(int index, in Plane plane, out Cluster cluster)
+    private bool TryGetMatchingCluster(int index, out Cluster cluster)
     {
         if (TryGetClusterIndex(index, out var clusterIndex))
         {
             cluster = _clusters[clusterIndex];
-            if (IsInSameCluster(plane, cluster)) return true;
+            return true;
         }
 
         cluster = default;
         return false;
     }
 
-    [MustUseReturnValue]
-    private Plane ConstructPlane(int i0, int i1, int i2)
-    {
-        var v0 = _vertices[i0];
-        var v1 = _vertices[i1];
-        var v2 = _vertices[i2];
-
-        return new Plane(v0, v1, v2);
-    }
-
     private bool TryGetClusterIndex(int vertexIndex, out int clusterIndex) =>
         _vertexToClusterIndex.TryGetValue(vertexIndex, out clusterIndex);
 
-    private bool IsInSameCluster(in Plane plane, in Cluster cluster) =>
-        Vector3.Dot(plane.normal, cluster.Plane.normal) >= _minDot;
-
-    public struct Cluster
+    private struct Cluster
     {
         public List<int> Indices;
-        public Plane Plane;
         public int Index;
     }
 }
