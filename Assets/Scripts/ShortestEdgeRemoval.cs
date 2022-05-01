@@ -1,17 +1,27 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.Color;
+using static UnityEngine.Vector3;
 
 public class ShortestEdgeRemoval
 {
+    private readonly List<Color> _colors;
+    private readonly List<Vector3> _normals;
     private readonly List<int> _triangles;
     private readonly List<Vector3> _vertices;
-    public Dictionary<Edge, int> _edgesPolygonsCount;
+    private Dictionary<Edge, int> _edgesPolygonsCount;
 
-    public ShortestEdgeRemoval(List<int> triangles, List<Vector3> vertices)
+    public ShortestEdgeRemoval(List<int> triangles, List<Vector3> vertices, List<Vector3> normals, List<Color> colors)
     {
         _triangles = triangles;
         _vertices = vertices;
+        _normals = normals;
+        _colors = colors;
     }
+
+    private bool HasNormals => _normals.Count > 0;
+
+    public bool HasColors => _colors.Count > 0;
 
     private void AddEdge(int i0, int i1)
     {
@@ -98,7 +108,7 @@ public class ShortestEdgeRemoval
                     if (HasBorderEdge(t2)) continue;
                     if (!TryGetSharedEdge(t1, t2, out var edge)) continue;
 
-                    var lengthSqr = Vector3.SqrMagnitude(_vertices[edge.I0] - _vertices[edge.I1]);
+                    var lengthSqr = SqrMagnitude(_vertices[edge.I0] - _vertices[edge.I1]);
                     if (lengthSqr > minLengthSqr) continue;
 
                     shortestEdge = edge;
@@ -111,10 +121,10 @@ public class ShortestEdgeRemoval
             if (shortestEdge != null && Mathf.Sqrt(minLengthSqr) > minEdgeLength)
             {
                 var edge = shortestEdge.Value;
-                var vertex0 = _vertices[edge.I0];
-                var vertex1 = _vertices[edge.I1];
-                var newVertex = Vector3.Lerp(vertex0, vertex1, 0.5f);
-                _vertices[edge.I0] = newVertex;
+                var vertex0 = GetVertex(edge.I0);
+                var vertex1 = GetVertex(edge.I1);
+                var newVertex = VertexAttributes.Interpolate(vertex0, vertex1, 0.5f);
+                SetVertex(edge.I0, newVertex);
 
                 var tMaxIndex = Mathf.Max(t1Index, t2Index);
                 var tMinIndex = Mathf.Min(t1Index, t2Index);
@@ -137,6 +147,22 @@ public class ShortestEdgeRemoval
         ComputeBorderEdges();
     }
 
+    private VertexAttributes GetVertex(int index) =>
+        new VertexAttributes(
+            _vertices[index],
+            HasNormals ? _normals[index] : zero,
+            HasColors ? _colors[index] : clear
+        );
+
+    private void SetVertex(int index, VertexAttributes vertex)
+    {
+        _vertices[index] = vertex.Position;
+        if (HasNormals)
+            _normals[index] = vertex.Normal;
+        if (HasColors)
+            _colors[index] = vertex.Color;
+    }
+
     private void ComputeBorderEdges()
     {
         _edgesPolygonsCount = new Dictionary<Edge, int>(new EdgeEqualityComparer());
@@ -152,6 +178,27 @@ public class ShortestEdgeRemoval
         }
     }
 
+    public struct VertexAttributes
+    {
+        public Vector3 Position;
+        public Vector3 Normal;
+        public Color Color;
+
+        public VertexAttributes(Vector3 position, Vector3 normal, Color color)
+        {
+            Position = position;
+            Normal = normal;
+            Color = color;
+        }
+
+        public static VertexAttributes Interpolate(VertexAttributes va1, VertexAttributes va2, float t) =>
+            new VertexAttributes(
+                Lerp(va1.Position, va2.Position, t),
+                Slerp(va1.Normal, va2.Normal, t),
+                Lerp(va1.Color, va2.Color, t)
+            );
+    }
+
     private class EdgeEqualityComparer : IEqualityComparer<Edge>
     {
         public bool Equals(Edge x, Edge y) =>
@@ -161,7 +208,7 @@ public class ShortestEdgeRemoval
         public int GetHashCode(Edge obj) => obj.I0 ^ obj.I1;
     }
 
-    public struct Edge
+    private struct Edge
     {
         public int I0;
         public int I1;

@@ -11,6 +11,8 @@ public class Decimate : MonoBehaviour
 
     private readonly List<Cluster> _clusters = new List<Cluster>();
     private readonly Dictionary<int, int> _vertexToClusterIndex = new Dictionary<int, int>();
+    private List<Color> _colors;
+    private List<Vector3> _normals;
     private List<Vector3> _vertices;
 
     private void Start()
@@ -37,6 +39,12 @@ public class Decimate : MonoBehaviour
 
         _vertices = new List<Vector3>();
         mesh.GetVertices(_vertices);
+
+        _normals = new List<Vector3>();
+        mesh.GetNormals(_normals);
+
+        _colors = new List<Color>();
+        mesh.GetColors(_colors);
 
         for (var i = 0; i < triangles.Count; i += 3)
         {
@@ -82,18 +90,15 @@ public class Decimate : MonoBehaviour
             }
         }
 
-        var colors = new Color[_vertices.Count];
-        var normals = new Vector3[_vertices.Count];
-
         foreach (var cluster in _clusters)
         {
-            var shortestEdgeRemoval = new ShortestEdgeRemoval(cluster.Indices, _vertices);
+            var shortestEdgeRemoval = new ShortestEdgeRemoval(cluster.Indices, _vertices, _normals, _colors);
             shortestEdgeRemoval.Run(_removalIterations, _minEdgeLength);
         }
 
         mesh.SetTriangles(_clusters.SelectMany(c => c.Indices).ToArray(), 0);
-        mesh.SetColors(colors);
-        mesh.SetNormals(normals);
+        mesh.SetColors(_colors);
+        mesh.SetNormals(_normals);
     }
 
     private void AddTriangle(in Cluster cluster, int i0, int i1, int i2)
