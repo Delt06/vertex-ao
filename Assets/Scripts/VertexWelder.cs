@@ -31,9 +31,7 @@ public class VertexWelder
                 {
                     if (weldedVertices.Contains(iv1)) continue;
 
-                    var v0 = _vertexAttributes.GetVertex(iv0);
-                    var v1 = _vertexAttributes.GetVertex(iv1);
-                    var weightedSum = EdgeRemovalWeights.ComputeWeightedSum(v0, v1, weights);
+                    var weightedSum = EdgeRemovalWeights.ComputeWeightedSum(_vertexAttributes, iv0, iv1, weights);
 
                     if (weightedSum > maxWeight) continue;
 

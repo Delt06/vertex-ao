@@ -98,10 +98,7 @@ public class ShortestEdgeRemoval
                     if (HasBorderEdge(t2)) continue;
                     if (!TryGetSharedEdge(t1, t2, out var edge)) continue;
 
-                    var v0 = _vertexAttributes.GetVertex(edge.I0);
-                    var v1 = _vertexAttributes.GetVertex(edge.I1);
-
-                    var value = EdgeRemovalWeights.ComputeWeightedSum(v0, v1, weights);
+                    var value = EdgeRemovalWeights.ComputeWeightedSum(_vertexAttributes, edge.I0, edge.I1, weights);
                     if (value > minValue) continue;
                     if (value < minTotalWeight) continue;
 

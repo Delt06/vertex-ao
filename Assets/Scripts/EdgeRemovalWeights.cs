@@ -16,12 +16,13 @@ public struct EdgeRemovalWeights
         NormalDifference = 1f,
     };
 
-    public static float ComputeWeightedSum(in VertexAttributes.Vertex v0, in VertexAttributes.Vertex v1,
+    public static float ComputeWeightedSum(VertexAttributes vertexAttributes, int i0, int i1,
         in EdgeRemovalWeights weights)
     {
-        var lengthSqr = SqrMagnitude(v0.Position - v1.Position);
-        var normalsDiffSqr = SqrMagnitude(Normalize(v0.Normal) - Normalize(v1.Normal));
-        var colorSqrDifference = ColorSqrDifference(v0.Color, v1.Color);
+        var lengthSqr = SqrMagnitude(vertexAttributes.GetPosition(i0) - vertexAttributes.GetPosition(i1));
+        var normalsDiffSqr =
+            SqrMagnitude(Normalize(vertexAttributes.GetNormal(i0)) - Normalize(vertexAttributes.GetNormal(i1)));
+        var colorSqrDifference = ColorSqrDifference(vertexAttributes.GetColor(i0), vertexAttributes.GetColor(i1));
         var value = lengthSqr * weights.EdgeLength +
                     normalsDiffSqr * weights.NormalDifference +
                     colorSqrDifference * weights.ColorDifference

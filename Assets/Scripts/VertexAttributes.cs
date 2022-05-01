@@ -1,8 +1,14 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using JetBrains.Annotations;
 using UnityEngine;
 
 public class VertexAttributes
 {
+    private static readonly Vector3 DefaultNormal = Vector3.zero;
+    private static readonly Color DefaultColor = Color.clear;
+    private static readonly Vector4 DefaultTangent = Vector4.zero;
+    private static readonly Vector4 DefaultUV = Vector4.zero;
     private readonly List<Color> _colors;
     private readonly List<Vector3> _normals;
     private readonly List<Vector4> _tangents;
@@ -38,15 +44,30 @@ public class VertexAttributes
         mesh.SetUVs(0, _uvs);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MustUseReturnValue]
     public Vertex GetVertex(int index) =>
         new Vertex(
             _vertices[index],
-            HasNormals ? _normals[index] : Vector3.zero,
-            HasColors ? _colors[index] : Color.clear,
-            HasTangents ? _tangents[index] : Vector4.zero,
-            HasUVs ? _uvs[index] : Vector4.zero
+            HasNormals ? _normals[index] : DefaultNormal,
+            HasColors ? _colors[index] : DefaultColor,
+            HasTangents ? _tangents[index] : DefaultTangent,
+            HasUVs ? _uvs[index] : DefaultUV
         );
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MustUseReturnValue]
+    public Vector3 GetPosition(int index) => _vertices[index];
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MustUseReturnValue]
+    public Vector3 GetNormal(int index) => HasNormals ? _normals[index] : Vector3.zero;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MustUseReturnValue]
+    public Color GetColor(int index) => HasColors ? _colors[index] : DefaultColor;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void SetVertex(int index, Vertex vertex)
     {
         _vertices[index] = vertex.Position;
