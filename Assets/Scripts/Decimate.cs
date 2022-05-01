@@ -79,17 +79,6 @@ public class Decimate : MonoBehaviour
             _clusters.Add(newCluster);
         }
 
-        foreach (var c1 in _clusters)
-        {
-            foreach (var c2 in _clusters)
-            {
-                if (c1.Index == c2.Index) continue;
-
-                if (c1.Indices.Intersect(c2.Indices).Any())
-                    Debug.Log(c1.Index + " intersects with " + c2.Index);
-            }
-        }
-
         foreach (var cluster in _clusters)
         {
             var shortestEdgeRemoval = new ShortestEdgeRemoval(cluster.Indices, _vertices, _normals, _colors);
