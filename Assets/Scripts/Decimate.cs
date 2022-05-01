@@ -1,12 +1,14 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using JetBrains.Annotations;
 using UnityEngine;
 
 [DefaultExecutionOrder(-1)]
 public class Decimate : MonoBehaviour
 {
-    [SerializeField] [Range(-1, 1)] private float _minDot = 0.9f;
     [SerializeField] private bool _updateEachFrame;
+    [SerializeField] [Range(-1, 1)] private float _minDot = 0.9f;
+    [SerializeField] [Min(0f)] private float _vertexCollapseDistance = 0.1f;
 
     private readonly List<Cluster> _clusters = new List<Cluster>();
     private readonly Dictionary<int, int> _vertexToClusterIndex = new Dictionary<int, int>();
@@ -64,7 +66,7 @@ public class Decimate : MonoBehaviour
 
             var newCluster = new Cluster
             {
-                Indices = new HashSet<int>(),
+                Indices = new List<int>(),
                 Plane = plane,
                 Index = _clusters.Count,
             };
@@ -73,8 +75,23 @@ public class Decimate : MonoBehaviour
         }
 
         var colors = new Color[_vertices.Count];
+        var normals = new Vector3[_vertices.Count];
         var oldState = Random.state;
         Random.InitState(0);
+
+        foreach (var cluster in _clusters)
+        {
+            for (var vertexIndex = cluster.Indices.Count - 3; vertexIndex >= 0; vertexIndex -= 3)
+            {
+                var i0 = cluster.Indices[vertexIndex + 0];
+                var i1 = cluster.Indices[vertexIndex + 1];
+                var i2 = cluster.Indices[vertexIndex + 2];
+                var vertex0 = _vertices[i0];
+                var vertex1 = _vertices[i1];
+                var vertex2 = _vertices[i2];
+                if (Vector3.Distance(vertex0, vertex1) <= _vertexCollapseDistance) { }
+            }
+        }
 
         foreach (var cluster in _clusters)
         {
@@ -82,12 +99,15 @@ public class Decimate : MonoBehaviour
             foreach (var index in cluster.Indices)
             {
                 colors[index] = color;
+                normals[index] = cluster.Plane.normal;
             }
         }
 
         Random.state = oldState;
 
+        mesh.SetTriangles(_clusters.SelectMany(c => c.Indices).ToArray(), 0);
         mesh.SetColors(colors);
+        mesh.SetNormals(normals);
     }
 
     private void AddTriangle(in Cluster cluster, int i0, int i1, int i2)
@@ -130,7 +150,7 @@ public class Decimate : MonoBehaviour
 
     public struct Cluster
     {
-        public HashSet<int> Indices;
+        public List<int> Indices;
         public Plane Plane;
         public int Index;
     }
