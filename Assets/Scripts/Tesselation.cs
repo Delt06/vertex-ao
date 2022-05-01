@@ -1,12 +1,14 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using static UnityEngine.Vector3;
+using static MathExt;
 
 [DefaultExecutionOrder(-3)]
 public class Tesselation : MonoBehaviour
 {
     [SerializeField] [Min(1)] private int _iterations = 1;
     [SerializeField] [Min(0f)] private float _minTriangleArea = 0.01f;
+    [SerializeField] [Min(1)] private int _weldIterations = 1;
 
     private List<Vector3> _newNormals;
     private List<Vector4> _newTangents;
@@ -135,9 +137,9 @@ public class Tesselation : MonoBehaviour
                     _newUvs.Add(uv2);
                     if (applyTesselation)
                     {
-                        _newUvs.Add(Lerp(uv0, uv1, 0.5f));
-                        _newUvs.Add(Lerp(uv1, uv2, 0.5f));
-                        _newUvs.Add(Lerp(uv0, uv2, 0.5f));
+                        _newUvs.Add(Vector4.Lerp(uv0, uv1, 0.5f));
+                        _newUvs.Add(Vector4.Lerp(uv1, uv2, 0.5f));
+                        _newUvs.Add(Vector4.Lerp(uv0, uv2, 0.5f));
                     }
                 }
             }
@@ -146,33 +148,21 @@ public class Tesselation : MonoBehaviour
                 break;
         }
 
+        var colors = new List<Color>();
+        mesh.GetColors(colors);
 
-        mesh.SetVertices(_newVertices);
+        var vertexAttributes = new VertexAttributes(_newVertices, _newNormals, colors, _newTangents, _newUvs);
+
+        var vertexWelder = new VertexWelder(vertexAttributes, _newTriangles);
+        vertexWelder.Run(EdgeRemovalWeights.Uniform, 0f, _weldIterations);
+
+
+        vertexAttributes.WriteToMesh(mesh);
         mesh.SetTriangles(_newTriangles, 0);
-        if (recalculateNormals)
-            mesh.SetNormals(_newNormals);
-        if (recalculateTangents)
-            mesh.SetTangents(_newTangents);
-        if (recalculateUvs)
-            mesh.SetUVs(0, _newUvs);
     }
 
     private float GetTriangleArea(Vector3 v0, Vector3 v1, Vector3 v2) =>
         Cross(v0 - v1, v0 - v2).magnitude * 0.5f;
-
-    private static Vector4 LerpTangent(Vector4 t1, Vector4 t2, float t)
-    {
-        var newTangent = Vector4.Lerp(t1, t2, t).normalized;
-        newTangent.w = Mathf.Lerp(t1.w, t2.w, t);
-        return newTangent;
-    }
-
-    private static Vector4 Lerp(Vector4 v1, Vector4 v2, float t)
-    {
-        var newVertex = Vector4.Lerp(v1, v2, t);
-        newVertex.w = Mathf.Lerp(v1.w, v2.w, t);
-        return newVertex;
-    }
 
     private void AddTriangle(int relativeIndex0, int relativeIndex1, int relativeIndex2)
     {

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using static UnityEngine.Vector3;
 
 public class ShortestEdgeRemoval
 {
@@ -66,7 +65,7 @@ public class ShortestEdgeRemoval
         return false;
     }
 
-    public void Run(int iterations, float minEdgeLength)
+    public void Run(int iterations, float minTotalWeight, in EdgeRemovalWeights weights)
     {
         // http://paulbourke.net/geometry/polygonmesh/
         for (var iter = 0; iter < iterations; iter++)
@@ -74,7 +73,7 @@ public class ShortestEdgeRemoval
             ComputeBorderEdges();
 
             Edge? shortestEdge = null;
-            var minLengthSqr = float.PositiveInfinity;
+            var minValue = float.PositiveInfinity;
             var t1Index = -1;
             var t2Index = -1;
 
@@ -102,17 +101,18 @@ public class ShortestEdgeRemoval
                     var v0 = _vertexAttributes.GetVertex(edge.I0);
                     var v1 = _vertexAttributes.GetVertex(edge.I1);
 
-                    var lengthSqr = SqrMagnitude(v0.Position - v1.Position);
-                    if (lengthSqr > minLengthSqr) continue;
+                    var value = EdgeRemovalWeights.ComputeWeightedSum(v0, v1, weights);
+                    if (value > minValue) continue;
+                    if (value < minTotalWeight) continue;
 
                     shortestEdge = edge;
-                    minLengthSqr = lengthSqr;
+                    minValue = value;
                     t1Index = i;
                     t2Index = j;
                 }
             }
 
-            if (shortestEdge != null && Mathf.Sqrt(minLengthSqr) > minEdgeLength)
+            if (shortestEdge != null)
             {
                 var edge = shortestEdge.Value;
                 var vertex0 = _vertexAttributes.GetVertex(edge.I0);
