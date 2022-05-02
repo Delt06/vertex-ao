@@ -1,60 +1,88 @@
 ﻿using System.Collections.Generic;
+using Unity.Collections.LowLevel.Unsafe;
+using Unity.Mathematics;
+using UnityEngine;
 
 public class VertexWelder
 {
     private readonly List<int> _triangles;
     private readonly VertexAttributes _vertexAttributes;
+    private readonly ComputeShader _weldPrepareCs;
 
-    public VertexWelder(VertexAttributes vertexAttributes, List<int> triangles)
+    public VertexWelder(VertexAttributes vertexAttributes, List<int> triangles, ComputeShader weldPrepareCs)
     {
         _triangles = triangles;
         _vertexAttributes = vertexAttributes;
+        _weldPrepareCs = weldPrepareCs;
     }
 
     public void Run(in EdgeRemovalWeights weights, float maxWeight, int iterations)
     {
         var welded = true;
 
+        var countBuffer = new ComputeBuffer(1, sizeof(int), ComputeBufferType.IndirectArguments);
+        var emptyBuffer = new ComputeBuffer(1, sizeof(int));
+
         for (var i = 0; i < iterations && welded; i++)
         {
             welded = false;
 
-            var weldedVertices = new HashSet<int>();
+            var positionsBuffer = _vertexAttributes.CreatePositionsBuffer();
+            var normalsBuffer = _vertexAttributes.CreateNormalsBuffer();
+            var colorsBuffer = _vertexAttributes.CreateColorsBuffer();
+            var verticesToWeldBuffer = new ComputeBuffer(_vertexAttributes.Count * _vertexAttributes.Count,
+                UnsafeUtility.SizeOf<int2>(), ComputeBufferType.Append
+            );
+            verticesToWeldBuffer.SetCounterValue(0);
 
-            var weldedVertexPairs = new List<(int i0, int i1)>();
+            const int kernelIndex = 0;
+            _weldPrepareCs.SetBuffer(kernelIndex, "_Positions", positionsBuffer);
+            var hasNormals = normalsBuffer != null;
+            _weldPrepareCs.SetBuffer(kernelIndex, "_Normals", hasNormals ? normalsBuffer : emptyBuffer);
+            _weldPrepareCs.SetBool("_HasNormals", hasNormals);
+            var hasColors = colorsBuffer != null;
+            _weldPrepareCs.SetBuffer(kernelIndex, "_Colors", hasColors ? colorsBuffer : emptyBuffer);
+            _weldPrepareCs.SetBool("_HasColors", hasColors);
+            _weldPrepareCs.SetInt("_VertexBufferSize", _vertexAttributes.Count);
+            _weldPrepareCs.SetBuffer(kernelIndex, "_ToWeld", verticesToWeldBuffer);
 
-            for (var iv0 = 0; iv0 < _vertexAttributes.Count; iv0++)
-            {
-                if (weldedVertices.Contains(iv0)) continue;
+            _weldPrepareCs.GetKernelThreadGroupSizes(kernelIndex, out var threadGroupSizeX, out _, out _);
+            var threadGroupsX = Mathf.CeilToInt((float) _vertexAttributes.Count / (int) threadGroupSizeX);
+            _weldPrepareCs.Dispatch(kernelIndex, threadGroupsX, 1, 1);
 
-                for (var iv1 = iv0 + 1; iv1 < _vertexAttributes.Count; iv1++)
-                {
-                    if (weldedVertices.Contains(iv1)) continue;
+            positionsBuffer?.Release();
+            normalsBuffer?.Release();
+            colorsBuffer?.Release();
 
-                    var weightedSum = EdgeRemovalWeights.ComputeWeightedSum(_vertexAttributes, iv0, iv1, weights);
-
-                    if (weightedSum > maxWeight) continue;
-
-                    weldedVertices.Add(iv0);
-                    weldedVertices.Add(iv1);
-                    weldedVertexPairs.Add((iv0, iv1));
-
-
-                    welded = true;
-                }
-            }
+            ComputeBuffer.CopyCount(verticesToWeldBuffer, countBuffer, 0);
+            var verticesToWeldBufferCounts = new int[1];
+            countBuffer.GetData(verticesToWeldBufferCounts);
+            var verticesToWeldBufferCount = verticesToWeldBufferCounts[0];
+            var verticesToWeld = new int2[verticesToWeldBufferCount];
+            verticesToWeldBuffer.GetData(verticesToWeld);
+            verticesToWeldBuffer.Release();
 
             var verticesToDelete = new List<int>();
+            var weldedVertices = new HashSet<int>();
             var indexMapping = new Dictionary<int, int>();
 
-            foreach (var (i0, i1) in weldedVertexPairs)
+            foreach (var vertices in verticesToWeld)
             {
+                var i0 = vertices.x;
+                var i1 = vertices.y;
+
+                if (weldedVertices.Contains(i0)) continue;
+                if (weldedVertices.Contains(i1)) continue;
+
                 var v0 = _vertexAttributes.GetVertex(i0);
                 var v1 = _vertexAttributes.GetVertex(i1);
                 var newVertex = VertexAttributes.Vertex.Interpolate(v0, v1, 0.5f);
                 _vertexAttributes.SetVertex(i0, newVertex);
                 indexMapping[i1] = i0;
                 verticesToDelete.Add(i1);
+
+                weldedVertices.Add(i0);
+                weldedVertices.Add(i1);
             }
 
             for (var it = 0; it < _triangles.Count; it++)
@@ -76,5 +104,8 @@ public class VertexWelder
                 }
             }
         }
+
+        countBuffer.Release();
+        emptyBuffer.Release();
     }
 }

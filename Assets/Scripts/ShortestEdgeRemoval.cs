@@ -133,9 +133,11 @@ public class ShortestEdgeRemoval
                         _triangles[index] = edge.I0;
                 }
             }
+            else
+            {
+                break;
+            }
         }
-
-        ComputeBorderEdges();
     }
 
 

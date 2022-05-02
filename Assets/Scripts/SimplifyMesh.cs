@@ -100,6 +100,8 @@ public class SimplifyMesh : MonoBehaviour
             cluster.Indices.Add(i2);
         }
 
+        Debug.Log("Triangles " + GetIndicesFromClusters().Length);
+
         if (_removalIterations > 0)
             foreach (var cluster in _clusters)
             {
@@ -107,8 +109,15 @@ public class SimplifyMesh : MonoBehaviour
                 shortestEdgeRemoval.Run(_removalIterations, _minTotalWeight, _edgeRemovalWeights);
             }
 
-        mesh.SetTriangles(_clusters.SelectMany(c => c.Indices).ToArray(), 0);
+        var newIndices = GetIndicesFromClusters();
+        Debug.Log("Triangles " + newIndices.Length);
+        mesh.SetTriangles(newIndices, 0);
         vertexAttributes.WriteToMesh(mesh);
+    }
+
+    private int[] GetIndicesFromClusters()
+    {
+        return _clusters.SelectMany(c => c.Indices).ToArray();
     }
 
     private void FindClusterRecursively(int vertexIndex, Cluster? cluster)

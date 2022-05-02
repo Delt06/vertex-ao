@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using JetBrains.Annotations;
+using Unity.Collections.LowLevel.Unsafe;
+using Unity.Mathematics;
 using UnityEngine;
 
 public class VertexAttributes
@@ -34,6 +36,31 @@ public class VertexAttributes
     private bool HasUVs => _uvs.Count > 0;
 
     private bool HasTangents => _tangents.Count > 0;
+
+    public ComputeBuffer CreatePositionsBuffer()
+    {
+        var computeBuffer = new ComputeBuffer(_vertices.Count, UnsafeUtility.SizeOf<float3>());
+        computeBuffer.SetData(_vertices);
+        return computeBuffer;
+    }
+
+    [CanBeNull]
+    public ComputeBuffer CreateNormalsBuffer()
+    {
+        if (!HasNormals) return null;
+        var computeBuffer = new ComputeBuffer(_normals.Count, UnsafeUtility.SizeOf<float3>());
+        computeBuffer.SetData(_normals);
+        return computeBuffer;
+    }
+
+    [CanBeNull]
+    public ComputeBuffer CreateColorsBuffer()
+    {
+        if (!HasColors) return null;
+        var computeBuffer = new ComputeBuffer(_colors.Count, UnsafeUtility.SizeOf<float4>());
+        computeBuffer.SetData(_colors);
+        return computeBuffer;
+    }
 
     public void WriteToMesh(Mesh mesh)
     {

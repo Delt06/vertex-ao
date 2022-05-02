@@ -1,0 +1,47 @@
+#pragma kernel cs_main
+
+StructuredBuffer<float3> _Positions;
+StructuredBuffer<float3> _Normals;
+StructuredBuffer<float4> _Colors;
+AppendStructuredBuffer<int2> _ToWeld;
+int _VertexBufferSize;
+bool _HasNormals;
+bool _HasColors;
+
+inline float distance_sqr(const float3 v1, const float3 v2)
+{
+    const float3 offset = v1 - v2;
+    return dot(offset, offset);
+}
+
+inline float distance_sqr(const float4 v1, const float4 v2)
+{
+    const float4 offset = v1 - v2;
+    return dot(offset, offset);
+}
+
+static const float max_weight = 0;
+
+
+[numthreads(128,1,1)]
+void cs_main (uint3 id : SV_DispatchThreadID)
+{
+    const uint iv0 = id.x;
+    if (iv0 >= (uint) _VertexBufferSize)
+        return;
+
+    for (uint iv1 = iv0 + 1; iv1 < (uint)  _VertexBufferSize; iv1++)
+    {
+        float sum = distance_sqr(_Positions[iv0], _Positions[iv1]);
+
+        if (_HasNormals)
+            sum += distance_sqr(_Normals[iv0], _Normals[iv1]);
+
+        if (_HasColors)
+            sum += distance_sqr(_Colors[iv0], _Colors[iv1]);
+
+        if (sum > max_weight) continue;
+
+        _ToWeld.Append(int2(iv0, iv1));
+    }
+}

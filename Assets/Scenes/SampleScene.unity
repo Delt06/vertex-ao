@@ -257,6 +257,7 @@ MonoBehaviour:
   _iterations: 1
   _minTriangleArea: 0.001
   _weldIterations: 1
+  _weldPrepareCs: {fileID: 7200000, guid: cd75323220ac4d149e16fda82187e674, type: 3}
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -506,6 +507,7 @@ MonoBehaviour:
   _iterations: 3
   _minTriangleArea: 0.001
   _weldIterations: 1
+  _weldPrepareCs: {fileID: 7200000, guid: cd75323220ac4d149e16fda82187e674, type: 3}
 --- !u!114 &939053496
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -617,12 +619,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _updateEachFrame: 0
-  _removalIterations: 10
+  _removalIterations: 50
   _minTotalWeight: 0
   _edgeRemovalWeights:
-    EdgeLength: 0.1
+    EdgeLength: 1
     NormalDifference: 0
-    ColorDifference: 1000
+    ColorDifference: 0
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0

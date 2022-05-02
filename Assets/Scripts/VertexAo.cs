@@ -15,7 +15,7 @@ public class VertexAo : MonoBehaviour
     [SerializeField] private float _initialOffset = 0.0001f;
     [SerializeField] [Min(0f)] private float _sampleRadius = 0.1f;
     [SerializeField] private LayerMask _layerMask = int.MaxValue;
-    [SerializeField] private ComputeShader _createRaycastCommandsCs;
+    [SerializeField] [HideInInspector] private ComputeShader _createRaycastCommandsCs;
     [SerializeField] private bool _updateEachFrame;
     [SerializeField] [Range(0f, 180f)] private float _angle = 90f;
 

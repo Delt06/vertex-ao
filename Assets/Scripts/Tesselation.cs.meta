@@ -1,3 +1,12 @@
-﻿fileFormatVersion: 2
+fileFormatVersion: 2
 guid: ce5cb8238ce14c92ae4f43efe27e957f
-timeCreated: 1651247041
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - _weldPrepareCs: {fileID: 7200000, guid: cd75323220ac4d149e16fda82187e674, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

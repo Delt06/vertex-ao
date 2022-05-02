@@ -8,7 +8,8 @@ public class Tesselation : MonoBehaviour
 {
     [SerializeField] [Min(1)] private int _iterations = 1;
     [SerializeField] [Min(0f)] private float _minTriangleArea = 0.01f;
-    [SerializeField] [Min(1)] private int _weldIterations = 1;
+    [SerializeField] [Min(0)] private int _weldIterations = 1;
+    [SerializeField] [HideInInspector] private ComputeShader _weldPrepareCs;
 
     private List<Vector3> _newNormals;
     private List<Vector4> _newTangents;
@@ -153,9 +154,11 @@ public class Tesselation : MonoBehaviour
 
         var vertexAttributes = new VertexAttributes(_newVertices, _newNormals, colors, _newTangents, _newUvs);
 
-        var vertexWelder = new VertexWelder(vertexAttributes, _newTriangles);
-        vertexWelder.Run(EdgeRemovalWeights.Uniform, 0f, _weldIterations);
-
+        if (_weldIterations > 0)
+        {
+            var vertexWelder = new VertexWelder(vertexAttributes, _newTriangles, _weldPrepareCs);
+            vertexWelder.Run(EdgeRemovalWeights.Uniform, 0f, _weldIterations);
+        }
 
         vertexAttributes.WriteToMesh(mesh);
         mesh.SetTriangles(_newTriangles, 0);
