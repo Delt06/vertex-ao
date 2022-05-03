@@ -15818,8 +15818,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _updateEachFrame: 0
-  _removalIterations: 0
-  _minTotalWeight: 0
+  _removalIterations: 10
+  _maxTotalWeight: 0
   _edgeRemovalWeights:
     EdgeLength: 0.01
     NormalDifference: 1

@@ -5,6 +5,7 @@ public class ShortestEdgeRemoval
 {
     private readonly List<int> _triangles;
     private readonly VertexAttributes _vertexAttributes;
+    private HashSet<int> _coveredVertices;
     private Dictionary<Edge, int> _edgesPolygonsCount;
 
     public ShortestEdgeRemoval(VertexAttributes vertexAttributes, List<int> triangles)
@@ -65,17 +66,31 @@ public class ShortestEdgeRemoval
         return false;
     }
 
+    private void Cover(in Triangle triangle)
+    {
+        _coveredVertices.Add(triangle.I0);
+        _coveredVertices.Add(triangle.I1);
+        _coveredVertices.Add(triangle.I2);
+    }
+
+    private bool IsCovered(in Triangle triangle) =>
+        _coveredVertices.Contains(triangle.I0) ||
+        _coveredVertices.Contains(triangle.I1) ||
+        _coveredVertices.Contains(triangle.I2);
+
     public void Run(int iterations, float maxTotalWeight, in EdgeRemovalWeights weights)
     {
+        _coveredVertices = new HashSet<int>();
+        var removalCandidates = new List<RemovalCandidate>();
+        var trianglesToRemove = new List<int>();
+
         // http://paulbourke.net/geometry/polygonmesh/
         for (var iter = 0; iter < iterations; iter++)
         {
+            _coveredVertices.Clear();
+            removalCandidates.Clear();
+            trianglesToRemove.Clear();
             ComputeBorderEdges();
-
-            Edge? shortestEdge = null;
-            var minValue = float.PositiveInfinity;
-            var t1Index = -1;
-            var t2Index = -1;
 
             for (var i = 0; i < _triangles.Count; i += 3)
             {
@@ -85,6 +100,7 @@ public class ShortestEdgeRemoval
                     I1 = _triangles[i + 1],
                     I2 = _triangles[i + 2],
                 };
+                if (IsCovered(t1)) continue;
                 if (HasBorderEdge(t1)) continue;
 
                 for (var j = i + 3; j < _triangles.Count; j += 3)
@@ -95,36 +111,44 @@ public class ShortestEdgeRemoval
                         I1 = _triangles[j + 1],
                         I2 = _triangles[j + 2],
                     };
+                    if (IsCovered(t2)) continue;
                     if (HasBorderEdge(t2)) continue;
                     if (!TryGetSharedEdge(t1, t2, out var edge)) continue;
 
                     var value = EdgeRemovalWeights.ComputeWeightedSum(_vertexAttributes, edge.I0, edge.I1, weights);
-                    if (value > minValue) continue;
                     if (value > maxTotalWeight) continue;
 
-                    shortestEdge = edge;
-                    minValue = value;
-                    t1Index = i;
-                    t2Index = j;
+                    removalCandidates.Add(new RemovalCandidate
+                        {
+                            Edge = edge,
+                            T1Index = i,
+                            T2Index = j,
+                        }
+                    );
+
+                    Cover(t1);
+                    Cover(t2);
                 }
             }
 
-            if (shortestEdge != null)
+            foreach (var removalCandidate in removalCandidates)
             {
-                var edge = shortestEdge.Value;
+                var edge = removalCandidate.Edge;
                 var vertex0 = _vertexAttributes.GetVertex(edge.I0);
                 var vertex1 = _vertexAttributes.GetVertex(edge.I1);
                 var newVertex = VertexAttributes.Vertex.Interpolate(vertex0, vertex1, 0.5f);
                 _vertexAttributes.SetVertex(edge.I0, newVertex);
 
+                var t1Index = removalCandidate.T1Index;
+                var t2Index = removalCandidate.T2Index;
                 var tMaxIndex = Mathf.Max(t1Index, t2Index);
                 var tMinIndex = Mathf.Min(t1Index, t2Index);
-                _triangles.RemoveAt(tMaxIndex + 2);
-                _triangles.RemoveAt(tMaxIndex + 1);
-                _triangles.RemoveAt(tMaxIndex + 0);
-                _triangles.RemoveAt(tMinIndex + 2);
-                _triangles.RemoveAt(tMinIndex + 1);
-                _triangles.RemoveAt(tMinIndex + 0);
+                trianglesToRemove.Add(tMaxIndex + 2);
+                trianglesToRemove.Add(tMaxIndex + 1);
+                trianglesToRemove.Add(tMaxIndex + 0);
+                trianglesToRemove.Add(tMinIndex + 2);
+                trianglesToRemove.Add(tMinIndex + 1);
+                trianglesToRemove.Add(tMinIndex + 0);
 
                 for (var index = 0; index < _triangles.Count; index++)
                 {
@@ -133,10 +157,16 @@ public class ShortestEdgeRemoval
                         _triangles[index] = edge.I0;
                 }
             }
-            else
+
+            trianglesToRemove.Sort((t1, t2) => t2.CompareTo(t1));
+
+            foreach (var i in trianglesToRemove)
             {
-                break;
+                _triangles.RemoveAt(i);
             }
+
+            if (removalCandidates.Count == 0)
+                break;
         }
     }
 
@@ -154,6 +184,13 @@ public class ShortestEdgeRemoval
             AddEdge(i1, i2);
             AddEdge(i2, i0);
         }
+    }
+
+    private struct RemovalCandidate
+    {
+        public Edge Edge;
+        public int T1Index;
+        public int T2Index;
     }
 
 
