@@ -20,7 +20,7 @@ public class VertexWelder
     {
         var welded = true;
 
-        var countBuffer = new ComputeBuffer(1, sizeof(int), ComputeBufferType.IndirectArguments);
+        var countBuffer = new ComputeBuffer(1, sizeof(uint), ComputeBufferType.IndirectArguments);
         var emptyBuffer = new ComputeBuffer(1, sizeof(int));
 
         for (var i = 0; i < iterations && welded; i++)
@@ -55,7 +55,7 @@ public class VertexWelder
             colorsBuffer?.Release();
 
             ComputeBuffer.CopyCount(verticesToWeldBuffer, countBuffer, 0);
-            var verticesToWeldBufferCounts = new int[1];
+            var verticesToWeldBufferCounts = new uint[1];
             countBuffer.GetData(verticesToWeldBufferCounts);
             var verticesToWeldBufferCount = verticesToWeldBufferCounts[0];
             var verticesToWeld = new int2[verticesToWeldBufferCount];
