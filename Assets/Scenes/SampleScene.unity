@@ -255,8 +255,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _updateEachFrame: 0
-  _removalIterations: 20
-  _minTotalWeight: 0
+  _removalIterations: 100
+  _maxTotalWeight: 0.2
   _edgeRemovalWeights:
     EdgeLength: 0.01
     NormalDifference: 5
@@ -487,8 +487,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _updateEachFrame: 0
-  _removalIterations: 60
-  _minTotalWeight: 0
+  _removalIterations: 150
+  _maxTotalWeight: 0.08
   _edgeRemovalWeights:
     EdgeLength: 0.01
     NormalDifference: 0.1
@@ -642,8 +642,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _updateEachFrame: 0
-  _removalIterations: 30
-  _minTotalWeight: 0
+  _removalIterations: 50
+  _maxTotalWeight: 0.01
   _edgeRemovalWeights:
     EdgeLength: 0.01
     NormalDifference: 1

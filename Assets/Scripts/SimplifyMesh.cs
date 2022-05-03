@@ -7,7 +7,7 @@ public class SimplifyMesh : MonoBehaviour
 {
     [SerializeField] private bool _updateEachFrame;
     [SerializeField] [Min(0)] private int _removalIterations = 3;
-    [SerializeField] [Min(0f)] private float _minTotalWeight;
+    [SerializeField] [Min(0f)] private float _maxTotalWeight;
     [SerializeField] private EdgeRemovalWeights _edgeRemovalWeights = new EdgeRemovalWeights
     {
         ColorDifference = 10,
@@ -109,7 +109,7 @@ public class SimplifyMesh : MonoBehaviour
             foreach (var cluster in _clusters)
             {
                 var shortestEdgeRemoval = new ShortestEdgeRemoval(vertexAttributes, cluster.Indices);
-                shortestEdgeRemoval.Run(_removalIterations, _minTotalWeight, _edgeRemovalWeights);
+                shortestEdgeRemoval.Run(_removalIterations, _maxTotalWeight, _edgeRemovalWeights);
             }
 
         var newIndices = GetIndicesFromClusters();

@@ -65,7 +65,7 @@ public class ShortestEdgeRemoval
         return false;
     }
 
-    public void Run(int iterations, float minTotalWeight, in EdgeRemovalWeights weights)
+    public void Run(int iterations, float maxTotalWeight, in EdgeRemovalWeights weights)
     {
         // http://paulbourke.net/geometry/polygonmesh/
         for (var iter = 0; iter < iterations; iter++)
@@ -100,7 +100,7 @@ public class ShortestEdgeRemoval
 
                     var value = EdgeRemovalWeights.ComputeWeightedSum(_vertexAttributes, edge.I0, edge.I1, weights);
                     if (value > minValue) continue;
-                    if (value < minTotalWeight) continue;
+                    if (value > maxTotalWeight) continue;
 
                     shortestEdge = edge;
                     minValue = value;
