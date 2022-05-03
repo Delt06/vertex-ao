@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using static UnityEngine.Vector3;
 using static MathExt;
@@ -161,8 +160,6 @@ public class Tesselation : MonoBehaviour
             vertexWelder.Run(_weldIterations);
         }
 
-        var count = _newVertices.Distinct(new AEC()).Count();
-
         vertexAttributes.WriteToMesh(mesh);
         mesh.SetTriangles(_newTriangles, 0);
     }
@@ -175,24 +172,5 @@ public class Tesselation : MonoBehaviour
         _newTriangles.Add(_triangleIndexBase + relativeIndex0);
         _newTriangles.Add(_triangleIndexBase + relativeIndex1);
         _newTriangles.Add(_triangleIndexBase + relativeIndex2);
-    }
-
-    private class AEC : IEqualityComparer<Vector3>
-    {
-        public bool Equals(Vector3 x, Vector3 y) => SqrMagnitude(x - y) < 0.0001f;
-
-        public int GetHashCode(Vector3 obj)
-        {
-            unchecked
-            {
-                var hashCode = obj.x.GetHashCode();
-                hashCode = (hashCode * 397) ^ obj.y.GetHashCode();
-                hashCode = (hashCode * 397) ^ obj.z.GetHashCode();
-                hashCode = (hashCode * 397) ^ obj.normalized.GetHashCode();
-                hashCode = (hashCode * 397) ^ obj.magnitude.GetHashCode();
-                hashCode = (hashCode * 397) ^ obj.sqrMagnitude.GetHashCode();
-                return hashCode;
-            }
-        }
     }
 }
