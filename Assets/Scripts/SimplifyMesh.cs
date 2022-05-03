@@ -8,7 +8,12 @@ public class SimplifyMesh : MonoBehaviour
     [SerializeField] private bool _updateEachFrame;
     [SerializeField] [Min(0)] private int _removalIterations = 3;
     [SerializeField] [Min(0f)] private float _minTotalWeight;
-    [SerializeField] private EdgeRemovalWeights _edgeRemovalWeights = EdgeRemovalWeights.Uniform;
+    [SerializeField] private EdgeRemovalWeights _edgeRemovalWeights = new EdgeRemovalWeights
+    {
+        ColorDifference = 10,
+        EdgeLength = 0.01f,
+        NormalDifference = 1f,
+    };
 
     private readonly List<Cluster> _clusters = new List<Cluster>();
     private readonly Dictionary<int, HashSet<int>> _edges = new Dictionary<int, HashSet<int>>();

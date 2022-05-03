@@ -16,7 +16,7 @@ public class VertexWelder
         _weldPrepareCs = weldPrepareCs;
     }
 
-    public void Run(in EdgeRemovalWeights weights, float maxWeight, int iterations)
+    public void Run(int iterations)
     {
         var welded = true;
 
@@ -83,6 +83,7 @@ public class VertexWelder
 
                 weldedVertices.Add(i0);
                 weldedVertices.Add(i1);
+                welded = true;
             }
 
             for (var it = 0; it < _triangles.Count; it++)

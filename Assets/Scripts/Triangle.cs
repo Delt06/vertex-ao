@@ -20,4 +20,6 @@ public struct Triangle : IEquatable<Triangle>
             return hashCode;
         }
     }
+
+    public override string ToString() => $"({I0}, {I1}, {I2})";
 }
