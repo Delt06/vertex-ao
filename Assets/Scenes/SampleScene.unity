@@ -136,6 +136,7 @@ GameObject:
   - component: {fileID: 214273290}
   - component: {fileID: 214273289}
   - component: {fileID: 214273293}
+  - component: {fileID: 214273295}
   m_Layer: 0
   m_Name: Sphere (1)
   m_TagString: Untagged
@@ -213,7 +214,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 214273288}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.398, y: 0.060626388, z: -0.017}
+  m_LocalPosition: {x: -0.398, y: 0.060626388, z: 0.171}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -231,16 +232,35 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1a2f357be9343b46bf9eab2eba71f51, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _uSamples: 3
-  _vSamples: 5
-  _initialOffset: -0.05
-  _sampleRadius: 0.5
+  _uSamples: 10
+  _vSamples: 10
+  _initialOffset: -0.15
+  _sampleRadius: 1
   _layerMask:
     serializedVersion: 2
     m_Bits: 2147483647
   _createRaycastCommandsCs: {fileID: 7200000, guid: 543553e79e7ed14478a250bda3108b4e, type: 3}
   _updateEachFrame: 0
   _angle: 90
+--- !u!114 &214273295
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 214273288}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c1d1dbc192c4e0eb39c9ce9d1659182, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _updateEachFrame: 0
+  _removalIterations: 20
+  _minTotalWeight: 0
+  _edgeRemovalWeights:
+    EdgeLength: 0.01
+    NormalDifference: 5
+    ColorDifference: 10
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -345,9 +365,9 @@ GameObject:
   - component: {fileID: 819664273}
   - component: {fileID: 819664272}
   - component: {fileID: 819664271}
-  - component: {fileID: 819664270}
   - component: {fileID: 819664274}
   - component: {fileID: 819664275}
+  - component: {fileID: 819664270}
   m_Layer: 0
   m_Name: Plane
   m_TagString: Untagged
@@ -426,7 +446,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 819664269}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.073, y: -0.269, z: 0.255}
+  m_LocalPosition: {x: 0.073, y: -0.269, z: 0.11}
   m_LocalScale: {x: 0.15, y: 1, z: 0.15}
   m_Children: []
   m_Father: {fileID: 0}
@@ -444,10 +464,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1a2f357be9343b46bf9eab2eba71f51, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _uSamples: 5
-  _vSamples: 5
-  _initialOffset: -0.25
-  _sampleRadius: 1
+  _uSamples: 3
+  _vSamples: 3
+  _initialOffset: -0.5
+  _sampleRadius: 2
   _layerMask:
     serializedVersion: 2
     m_Bits: 2147483647
@@ -467,7 +487,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _updateEachFrame: 0
-  _removalIterations: 65
+  _removalIterations: 60
   _minTotalWeight: 0
   _edgeRemovalWeights:
     EdgeLength: 0.01
@@ -509,7 +529,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _iterations: 3
   _minTriangleArea: 0
-  _weldIterations: 10
+  _weldIterations: 1000
   _weldPrepareCs: {fileID: 7200000, guid: cd75323220ac4d149e16fda82187e674, type: 3}
 --- !u!114 &939053496
 MonoBehaviour:
@@ -526,7 +546,7 @@ MonoBehaviour:
   _uSamples: 25
   _vSamples: 25
   _initialOffset: -0.1
-  _sampleRadius: 1
+  _sampleRadius: 2
   _layerMask:
     serializedVersion: 2
     m_Bits: 2147483647
@@ -603,8 +623,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 939053494}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.85, z: -0.83}
-  m_LocalScale: {x: 1, y: 2.39, z: 1}
+  m_LocalPosition: {x: 0, y: -1.02, z: -0.83}
+  m_LocalScale: {x: 2.5663, y: 2.39, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 4
@@ -622,10 +642,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _updateEachFrame: 0
-  _removalIterations: 40
+  _removalIterations: 30
   _minTotalWeight: 0
   _edgeRemovalWeights:
-    EdgeLength: 0.1
+    EdgeLength: 0.01
     NormalDifference: 1
     ColorDifference: 25
 --- !u!1 &963194225

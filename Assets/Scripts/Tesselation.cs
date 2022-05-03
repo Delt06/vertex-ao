@@ -9,7 +9,7 @@ public class Tesselation : MonoBehaviour
 {
     [SerializeField] [Min(1)] private int _iterations = 1;
     [SerializeField] [Min(0f)] private float _minTriangleArea;
-    [SerializeField] [Min(0)] private int _weldIterations = 1;
+    [SerializeField] [Min(0)] private int _weldIterations = 100;
     [SerializeField] [HideInInspector] private ComputeShader _weldPrepareCs;
 
     private List<Vector3> _newNormals;
