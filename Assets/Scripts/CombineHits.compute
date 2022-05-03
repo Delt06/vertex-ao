@@ -1,0 +1,41 @@
+#pragma kernel cs_main
+
+struct raycast_hit
+{
+    float3 unused_point;
+    float3 normal;
+    uint unused_face_id;
+    float unused_distance;
+    float2 unused_uv;
+    int unused_collider;
+};
+
+
+int _USamples;
+int _VSamples;
+StructuredBuffer<raycast_hit> _Hits;
+RWBuffer<float4> _Colors;
+
+int _VertexBufferSize;
+
+
+[numthreads(128,1,1)]
+void cs_main(uint3 id : SV_DispatchThreadID)
+{
+    const uint index = id.x;
+    if (index >= (uint)_VertexBufferSize)
+        return;
+
+    float sum = 0;
+    const uint total_samples = _USamples * _VSamples;
+    const float one_over_total_samples = 1. / total_samples;
+
+    for (uint hit_index = 0; hit_index < total_samples; hit_index++)
+    {
+        const float3 normal = _Hits[index * total_samples + hit_index].normal;
+        if (dot(normal, normal) == 0)
+            sum += one_over_total_samples;
+    }
+
+    _Colors[index] = float4(sum, 1, 1, 1);
+}

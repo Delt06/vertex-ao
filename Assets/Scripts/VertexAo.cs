@@ -1,6 +1,5 @@
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
-using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Profiling;
@@ -16,6 +15,7 @@ public class VertexAo : MonoBehaviour
     [SerializeField] [Min(0f)] private float _sampleRadius = 0.1f;
     [SerializeField] private LayerMask _layerMask = int.MaxValue;
     [SerializeField] [HideInInspector] private ComputeShader _createRaycastCommandsCs;
+    [SerializeField] [HideInInspector] private ComputeShader _combineHitsCs;
     [SerializeField] private bool _updateEachFrame;
     [SerializeField] [Range(0f, 180f)] private float _angle = 90f;
 
@@ -53,7 +53,7 @@ public class VertexAo : MonoBehaviour
         var meshFilter = GetComponent<MeshFilter>();
         var mesh = meshFilter.mesh;
 
-        var colors = new NativeArray<float4>(mesh.vertexCount, Allocator.TempJob);
+        var colors = new Color[mesh.vertexCount];
 
         using (var dataArray = Mesh.AcquireReadOnlyMeshData(mesh))
         {
@@ -91,8 +91,10 @@ public class VertexAo : MonoBehaviour
             _createRaycastCommandsCs.SetFloat("_SampleRadius", _sampleRadius);
             _createRaycastCommandsCs.SetInt("_LayerMask", _layerMask);
 
-            _createRaycastCommandsCs.GetKernelThreadGroupSizes(0, out var kernelSizeX, out _, out _);
-            _createRaycastCommandsCs.Dispatch(0, Mathf.CeilToInt((float) vertices.Length / (int) kernelSizeX), 1, 1);
+            _createRaycastCommandsCs.GetKernelThreadGroupSizes(0, out var raycastKernelSizeX, out _, out _);
+            _createRaycastCommandsCs.Dispatch(0, Mathf.CeilToInt((float) vertices.Length / (int) raycastKernelSizeX), 1,
+                1
+            );
 
             var commandsArray = new RaycastCommand[commands.Length];
             commandsBuffer.GetData(commandsArray);
@@ -102,19 +104,25 @@ public class VertexAo : MonoBehaviour
             normalBuffer.Release();
             commandsBuffer.Release();
 
-            JobHandle jobHandle = default;
-            jobHandle = RaycastCommand.ScheduleBatch(commands, hits, 1, jobHandle);
+            RaycastCommand.ScheduleBatch(commands, hits, 1).Complete();
 
-            var combineHitsJob = new CombineHitsJob
-            {
-                Colors = colors,
-                Hits = hits,
-                USamples = _uSamples,
-                VSamples = _vSamples,
-            };
-            jobHandle = combineHitsJob.Schedule(meshData.vertexCount, 64, jobHandle);
+            _combineHitsCs.SetInt("_VertexBufferSize", vertices.Length);
+            _combineHitsCs.SetInt("_USamples", _uSamples);
+            _combineHitsCs.SetInt("_VSamples", _vSamples);
 
-            jobHandle.Complete();
+            var hitsBuffer = new ComputeBuffer(hits.Length, UnsafeUtility.SizeOf<RaycastHit>());
+            hitsBuffer.SetData(hits);
+            _combineHitsCs.SetBuffer(0, "_Hits", hitsBuffer);
+
+            var colorsBuffer = new ComputeBuffer(colors.Length, UnsafeUtility.SizeOf<float4>());
+            _combineHitsCs.SetBuffer(0, "_Colors", colorsBuffer);
+
+            _combineHitsCs.GetKernelThreadGroupSizes(0, out var combineKernelSizeX, out _, out _);
+            _combineHitsCs.Dispatch(0, Mathf.CeilToInt((float) vertices.Length / (int) combineKernelSizeX), 1, 1);
+
+            colorsBuffer.GetData(colors);
+            hitsBuffer.Release();
+            colorsBuffer.Release();
 
             vertices.Dispose();
             normals.Dispose();
@@ -123,7 +131,6 @@ public class VertexAo : MonoBehaviour
         }
 
         mesh.SetColors(colors);
-        colors.Dispose();
         Profiler.EndSample();
     }
 }

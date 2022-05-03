@@ -240,6 +240,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 2147483647
   _createRaycastCommandsCs: {fileID: 7200000, guid: 543553e79e7ed14478a250bda3108b4e, type: 3}
+  _combineHitsCs: {fileID: 7200000, guid: 3f24e62cbda248b7a67ac95adf712352, type: 3}
   _updateEachFrame: 0
   _angle: 90
 --- !u!114 &214273295
@@ -472,6 +473,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 2147483647
   _createRaycastCommandsCs: {fileID: 7200000, guid: 543553e79e7ed14478a250bda3108b4e, type: 3}
+  _combineHitsCs: {fileID: 7200000, guid: 3f24e62cbda248b7a67ac95adf712352, type: 3}
   _updateEachFrame: 0
   _angle: 90
 --- !u!114 &819664275
@@ -551,6 +553,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 2147483647
   _createRaycastCommandsCs: {fileID: 7200000, guid: 543553e79e7ed14478a250bda3108b4e, type: 3}
+  _combineHitsCs: {fileID: 7200000, guid: 3f24e62cbda248b7a67ac95adf712352, type: 3}
   _updateEachFrame: 0
   _angle: 90
 --- !u!65 &939053497
