@@ -143,6 +143,8 @@ public class ShortestEdgeRemoval
                 var t2Index = removalCandidate.T2Index;
                 var tMaxIndex = Mathf.Max(t1Index, t2Index);
                 var tMinIndex = Mathf.Min(t1Index, t2Index);
+                
+                // TODO: remove unused vertices
                 trianglesToRemove.Add(tMaxIndex + 2);
                 trianglesToRemove.Add(tMaxIndex + 1);
                 trianglesToRemove.Add(tMaxIndex + 0);
