@@ -26,13 +26,13 @@ public class SimplifyMesh : MonoBehaviour
 
     private void Start()
     {
-        CreateClusters();
+        Run();
     }
 
     private void Update()
     {
         if (_updateEachFrame)
-            CreateClusters();
+            Run();
     }
 
     private HashSet<int> GetOrCreateEdgeSet(int index)
@@ -42,8 +42,7 @@ public class SimplifyMesh : MonoBehaviour
         return set;
     }
 
-    [ContextMenu("Run")]
-    private void CreateClusters()
+    private void Run()
     {
         _clusters.Clear();
         _vertexToClusterIndex.Clear();
