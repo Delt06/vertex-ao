@@ -17,7 +17,10 @@ public class VertexAo : MonoBehaviour
     [SerializeField] [HideInInspector] private ComputeShader _combineHitsCs;
     [SerializeField] [Range(0f, 180f)] private float _angle = 90f;
 
-    private void Start() => BakeAo();
+    private void Start()
+    {
+        Baker.Instance.Schedule(BakeAo);
+    }
 
     private float2 GetURange() => float2(0, _angle / 180f);
 

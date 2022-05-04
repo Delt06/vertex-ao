@@ -20,6 +20,11 @@ public class Tesselation : MonoBehaviour
 
     private void Start()
     {
+        Baker.Instance.Schedule(Run);
+    }
+
+    private void Run()
+    {
         var meshFilter = GetComponent<MeshFilter>();
         var mesh = meshFilter.mesh;
 

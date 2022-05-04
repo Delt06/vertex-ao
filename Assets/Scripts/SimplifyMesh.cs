@@ -26,7 +26,7 @@ public class SimplifyMesh : MonoBehaviour
 
     private void Start()
     {
-        Run();
+        Baker.Instance.Schedule(Run);
     }
 
     private HashSet<int> GetOrCreateEdgeSet(int index)
