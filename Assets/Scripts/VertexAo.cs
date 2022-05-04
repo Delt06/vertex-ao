@@ -15,16 +15,9 @@ public class VertexAo : MonoBehaviour
     [SerializeField] private LayerMask _layerMask = int.MaxValue;
     [SerializeField] [HideInInspector] private ComputeShader _createRaycastCommandsCs;
     [SerializeField] [HideInInspector] private ComputeShader _combineHitsCs;
-    [SerializeField] private bool _updateEachFrame;
     [SerializeField] [Range(0f, 180f)] private float _angle = 90f;
 
     private void Start() => BakeAo();
-
-    private void Update()
-    {
-        if (_updateEachFrame)
-            BakeAo();
-    }
 
     private float2 GetURange() => float2(0, _angle / 180f);
 
