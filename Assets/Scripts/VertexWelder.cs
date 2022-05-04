@@ -30,19 +30,26 @@ public class VertexWelder
             var positionsBuffer = _vertexAttributes.CreatePositionsBuffer();
             var normalsBuffer = _vertexAttributes.CreateNormalsBuffer();
             var colorsBuffer = _vertexAttributes.CreateColorsBuffer();
+            var uvBuffer = _vertexAttributes.CreateUvBuffer();
             var verticesToWeldBuffer = new ComputeBuffer(_vertexAttributes.Count * _vertexAttributes.Count,
                 UnsafeUtility.SizeOf<int2>(), ComputeBufferType.Append
             );
             verticesToWeldBuffer.SetCounterValue(0);
 
+
             const int kernelIndex = 0;
             _weldPrepareCs.SetBuffer(kernelIndex, "_Positions", positionsBuffer);
+
             var hasNormals = normalsBuffer != null;
             _weldPrepareCs.SetBuffer(kernelIndex, "_Normals", hasNormals ? normalsBuffer : emptyBuffer);
             _weldPrepareCs.SetBool("_HasNormals", hasNormals);
             var hasColors = colorsBuffer != null;
             _weldPrepareCs.SetBuffer(kernelIndex, "_Colors", hasColors ? colorsBuffer : emptyBuffer);
             _weldPrepareCs.SetBool("_HasColors", hasColors);
+            var hasUv = uvBuffer != null;
+            _weldPrepareCs.SetBuffer(kernelIndex, "_UV", hasUv ? uvBuffer : emptyBuffer);
+            _weldPrepareCs.SetBool("_HasUV", hasUv);
+
             _weldPrepareCs.SetInt("_VertexBufferSize", _vertexAttributes.Count);
             _weldPrepareCs.SetBuffer(kernelIndex, "_ToWeld", verticesToWeldBuffer);
 
@@ -53,6 +60,7 @@ public class VertexWelder
             positionsBuffer?.Release();
             normalsBuffer?.Release();
             colorsBuffer?.Release();
+            uvBuffer?.Release();
 
             ComputeBuffer.CopyCount(verticesToWeldBuffer, countBuffer, 0);
             var verticesToWeldBufferCounts = new uint[1];

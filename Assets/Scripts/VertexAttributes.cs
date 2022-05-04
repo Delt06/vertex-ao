@@ -121,6 +121,17 @@ public class VertexAttributes
             _uvs.RemoveAt(index);
     }
 
+    [CanBeNull]
+    public ComputeBuffer CreateUvBuffer()
+    {
+        if (!HasUVs) return null;
+        var computeBuffer = new ComputeBuffer(_uvs.Count, UnsafeUtility.SizeOf<float4>());
+        computeBuffer.SetData(_uvs);
+        return computeBuffer;
+    }
+
+    public Vector4 GetUV(int index) => HasUVs ? _uvs[index] : DefaultUV;
+
     public struct Vertex
     {
         public Vector3 Position;

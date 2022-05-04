@@ -13,6 +13,7 @@ public class SimplifyMesh : MonoBehaviour
         ColorDifference = 10,
         EdgeLength = 0.01f,
         NormalDifference = 1f,
+        UvDifference = 1f,
     };
 
     private readonly List<Cluster> _clusters = new List<Cluster>();

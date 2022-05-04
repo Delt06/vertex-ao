@@ -3,10 +3,12 @@
 StructuredBuffer<float3> _Positions;
 StructuredBuffer<float3> _Normals;
 StructuredBuffer<float4> _Colors;
+StructuredBuffer<float4> _UV;
 AppendStructuredBuffer<int2> _ToWeld;
 int _VertexBufferSize;
 bool _HasNormals;
 bool _HasColors;
+bool _HasUV;
 
 inline float distance_sqr(const float3 v1, const float3 v2)
 {
@@ -39,6 +41,9 @@ void cs_main(uint3 id : SV_DispatchThreadID)
 
         if (_HasColors)
             sum += distance_sqr(_Colors[iv0], _Colors[iv1]);
+
+        if (_HasUV)
+            sum += distance_sqr(_UV[iv0], _UV[iv1]);
 
         if (sum > max_weight) continue;
 

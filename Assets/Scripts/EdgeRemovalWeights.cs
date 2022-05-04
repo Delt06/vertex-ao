@@ -8,13 +8,7 @@ public struct EdgeRemovalWeights
     public float EdgeLength;
     public float NormalDifference;
     public float ColorDifference;
-
-    public static EdgeRemovalWeights Uniform => new EdgeRemovalWeights
-    {
-        ColorDifference = 1f,
-        EdgeLength = 1f,
-        NormalDifference = 1f,
-    };
+    public float UvDifference;
 
     public static float ComputeWeightedSum(VertexAttributes vertexAttributes, int i0, int i1,
         in EdgeRemovalWeights weights)
@@ -23,10 +17,11 @@ public struct EdgeRemovalWeights
         var normalsDiffSqr =
             SqrMagnitude(Normalize(vertexAttributes.GetNormal(i0)) - Normalize(vertexAttributes.GetNormal(i1)));
         var colorSqrDifference = ColorSqrDifference(vertexAttributes.GetColor(i0), vertexAttributes.GetColor(i1));
+        var uvSqrDifference = SqrMagnitude(vertexAttributes.GetUV(i0) - vertexAttributes.GetUV(i1));
         var value = lengthSqr * weights.EdgeLength +
                     normalsDiffSqr * weights.NormalDifference +
-                    colorSqrDifference * weights.ColorDifference
-            ;
+                    colorSqrDifference * weights.ColorDifference +
+                    uvSqrDifference * weights.UvDifference;
         return value;
     }
 
