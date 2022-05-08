@@ -5,6 +5,7 @@ public class ShortestEdgeRemoval
 {
     private readonly List<int> _triangles;
     private readonly VertexAttributes _vertexAttributes;
+    private HashSet<int> _borderIndices;
     private HashSet<int> _coveredVertices;
     private Dictionary<Edge, int> _edgesPolygonsCount;
 
@@ -26,21 +27,11 @@ public class ShortestEdgeRemoval
         _edgesPolygonsCount[edge]++;
     }
 
-    private bool IsBorderEdge(int i0, int i1)
-    {
-        var edge = new Edge
-        {
-            I0 = i0,
-            I1 = i1,
-        };
-        return !_edgesPolygonsCount.TryGetValue(edge, out var polyCount) ||
-               polyCount <= 1;
-    }
+    private bool IsBorderEdge(Edge edge) =>
+        !_edgesPolygonsCount.TryGetValue(edge, out var polyCount) ||
+        polyCount <= 1;
 
-    private bool HasBorderEdge(in Triangle triangle) =>
-        IsBorderEdge(triangle.I0, triangle.I1) ||
-        IsBorderEdge(triangle.I1, triangle.I2) ||
-        IsBorderEdge(triangle.I2, triangle.I0);
+    private bool IsBorderIndex(int index) => _borderIndices.Contains(index);
 
     private static bool TryGetSharedEdge(in Triangle t1, in Triangle t2, out Edge sharedEdge)
     {
@@ -94,26 +85,15 @@ public class ShortestEdgeRemoval
 
             for (var i = 0; i < _triangles.Count; i += 3)
             {
-                var t1 = new Triangle
-                {
-                    I0 = _triangles[i + 0],
-                    I1 = _triangles[i + 1],
-                    I2 = _triangles[i + 2],
-                };
+                var t1 = GetTriangle(i);
                 if (IsCovered(t1)) continue;
-                if (HasBorderEdge(t1)) continue;
 
                 for (var j = i + 3; j < _triangles.Count; j += 3)
                 {
-                    var t2 = new Triangle
-                    {
-                        I0 = _triangles[j + 0],
-                        I1 = _triangles[j + 1],
-                        I2 = _triangles[j + 2],
-                    };
+                    var t2 = GetTriangle(j);
                     if (IsCovered(t2)) continue;
-                    if (HasBorderEdge(t2)) continue;
                     if (!TryGetSharedEdge(t1, t2, out var edge)) continue;
+                    if (IsBorderIndex(edge.I0) && IsBorderIndex(edge.I1)) continue;
 
                     var value = EdgeRemovalWeights.ComputeWeightedSum(_vertexAttributes, edge.I0, edge.I1, weights);
                     if (value > maxTotalWeight) continue;
@@ -136,7 +116,14 @@ public class ShortestEdgeRemoval
                 var edge = removalCandidate.Edge;
                 var vertex0 = _vertexAttributes.GetVertex(edge.I0);
                 var vertex1 = _vertexAttributes.GetVertex(edge.I1);
-                var newVertex = VertexAttributes.Vertex.Interpolate(vertex0, vertex1, 0.5f);
+                float t;
+                if (IsBorderIndex(edge.I0))
+                    t = 0;
+                else if (IsBorderIndex(edge.I1))
+                    t = 1f;
+                else
+                    t = 0.5f;
+                var newVertex = VertexAttributes.Vertex.Interpolate(vertex0, vertex1, t);
                 _vertexAttributes.SetVertex(edge.I0, newVertex);
 
                 var t1Index = removalCandidate.T1Index;
@@ -172,10 +159,19 @@ public class ShortestEdgeRemoval
         }
     }
 
+    private Triangle GetTriangle(int i) =>
+        new Triangle
+        {
+            I0 = _triangles[i + 0],
+            I1 = _triangles[i + 1],
+            I2 = _triangles[i + 2],
+        };
+
 
     private void ComputeBorderEdges()
     {
         _edgesPolygonsCount = new Dictionary<Edge, int>(new EdgeEqualityComparer());
+        _borderIndices = new HashSet<int>();
 
         for (var i = 0; i < _triangles.Count; i += 3)
         {
@@ -185,6 +181,14 @@ public class ShortestEdgeRemoval
             AddEdge(i0, i1);
             AddEdge(i1, i2);
             AddEdge(i2, i0);
+        }
+
+        foreach (var kvp in _edgesPolygonsCount)
+        {
+            if (!IsBorderEdge(kvp.Key)) continue;
+
+            _borderIndices.Add(kvp.Key.I0);
+            _borderIndices.Add(kvp.Key.I1);
         }
     }
 
