@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using JetBrains.Annotations;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 public class Baker : MonoBehaviour
 {
@@ -10,6 +11,7 @@ public class Baker : MonoBehaviour
     [CanBeNull]
     private static Baker _baker;
     private readonly Queue<Action> _queue = new Queue<Action>();
+    private float _cumulativeBakingTime;
 
     public static Baker Instance
     {
@@ -25,6 +27,8 @@ public class Baker : MonoBehaviour
 
     private void Update()
     {
+        if (_queue.Count == 0) return;
+
         var totalTime = 0L;
 
         while (totalTime < MaxMsPerFrame && _queue.Count > 0)
@@ -35,6 +39,13 @@ public class Baker : MonoBehaviour
             stopwatch.Stop();
             totalTime += stopwatch.ElapsedMilliseconds;
         }
+
+        _cumulativeBakingTime += totalTime / 1000f;
+
+        if (_queue.Count > 0) return;
+
+        Debug.Log($"Baking session finished in {_cumulativeBakingTime:F2} seconds");
+        _cumulativeBakingTime = 0f;
     }
 
     public void Schedule(Action action)

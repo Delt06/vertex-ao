@@ -254,7 +254,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c1d1dbc192c4e0eb39c9ce9d1659182, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _removalIterations: 5
+  _removalIterations: 1
   _maxTotalWeight: 0.2
   _edgeRemovalWeights:
     EdgeLength: 0.01
