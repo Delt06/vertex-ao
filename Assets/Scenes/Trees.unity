@@ -415,7 +415,6 @@ MonoBehaviour:
     m_Bits: 2147483647
   _createRaycastCommandsCs: {fileID: 7200000, guid: 543553e79e7ed14478a250bda3108b4e, type: 3}
   _combineHitsCs: {fileID: 7200000, guid: 3f24e62cbda248b7a67ac95adf712352, type: 3}
-  _updateEachFrame: 0
   _angle: 90
 --- !u!64 &644070569
 MeshCollider:
@@ -443,11 +442,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c1d1dbc192c4e0eb39c9ce9d1659182, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _updateEachFrame: 0
   _removalIterations: 3
-  _maxTotalWeight: Infinity
+  _maxTotalWeight: 0.075
   _edgeRemovalWeights:
     EdgeLength: 0.01
     NormalDifference: 1
     ColorDifference: 10
-    UvDifference: 1
+    UvDifference: 2

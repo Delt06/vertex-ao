@@ -336,7 +336,6 @@ MonoBehaviour:
     m_Bits: 2147483647
   _createRaycastCommandsCs: {fileID: 7200000, guid: 543553e79e7ed14478a250bda3108b4e, type: 3}
   _combineHitsCs: {fileID: 7200000, guid: 3f24e62cbda248b7a67ac95adf712352, type: 3}
-  _updateEachFrame: 0
   _angle: 100.2
 --- !u!114 &1351619799
 MonoBehaviour:
@@ -366,7 +365,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c1d1dbc192c4e0eb39c9ce9d1659182, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _updateEachFrame: 0
   _removalIterations: 100
   _maxTotalWeight: 0.1
   _edgeRemovalWeights:
@@ -586,14 +584,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1a2f357be9343b46bf9eab2eba71f51, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _uSamples: 15
-  _vSamples: 15
-  _initialOffset: 0.0001
-  _sampleRadius: 0.1
+  _uSamples: 10
+  _vSamples: 10
+  _initialOffset: 0.01
+  _sampleRadius: 0.25
   _layerMask:
     serializedVersion: 2
     m_Bits: 2147483647
   _createRaycastCommandsCs: {fileID: 7200000, guid: 543553e79e7ed14478a250bda3108b4e, type: 3}
   _combineHitsCs: {fileID: 7200000, guid: 3f24e62cbda248b7a67ac95adf712352, type: 3}
-  _updateEachFrame: 0
-  _angle: 90
+  _angle: 160
